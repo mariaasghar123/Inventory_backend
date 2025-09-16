@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int     @id @default(autoincrement())
+  name     String
+  role     String
+  username String  @unique
+  password String
+  email    String? @unique
+
+  sales Sale[]
+}
+
+model Product {
+  id             Int    @id @default(autoincrement())
+  sku            String
+  name           String
+  category       String
+  unit           String
+  barcode        String
+  purchase_price Float
+  sale_price     Float
+  reorder_level  Int
+
+  stock_batches  StockBatch[]
+  sale_items     SaleItem[]
+  // ✅ Add these two lines for reverse relations:
+  returns        Return[] // 👈 reverse relation of Return.product
+  purchase_items PurchaseItem[] // 👈 reverse relation of PurchaseItem.product
+}
+
+model StockBatch {
+  id          Int      @id @default(autoincrement())
+  product     Product  @relation(fields: [productId], references: [id])
+  productId   Int
+  batch_no    String
+  expiry_date DateTime
+  qty         Int
+}
+
+model Sale {
+  id            Int      @id @default(autoincrement())
+  invoice_no    String
+  date          DateTime @default(now())
+  total         Float
+  discount      Float
+  paymentMethod String
+  createdBy     Int
+  user          User     @relation(fields: [createdBy], references: [id])
+
+  items   SaleItem[]
+  // ✅ Add this for reverse relation of Return.sale:
+  returns Return[] // 👈 reverse relation of Return.sale
+}
+
+model SaleItem {
+  id        Int     @id @default(autoincrement())
+  sale      Sale    @relation(fields: [saleId], references: [id])
+  saleId    Int
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int
+  qty       Int
+  price     Float
+  subtotal  Float
+}
+
+model Return {
+  id           Int    @id @default(autoincrement())
+  saleId       Int
+  productId    Int
+  qty          Int
+  reason       String
+  refundAmount Float
+
+  sale    Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("returns")
+}
+
+model Purchase {
+  id         Int      @id @default(autoincrement())
+  supplierId Int
+  date       DateTime
+  invoiceNo  String
+  total      Float
+
+  items PurchaseItem[]
+
+  @@map("purchases")
+}
+
+model PurchaseItem {
+  id         Int   @id @default(autoincrement())
+  purchaseId Int
+  productId  Int
+  qty        Int
+  costPrice  Float
+
+  purchase Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("purchase_items")
+}
+
+model Expense {
+  id           Int       @id @default(autoincrement())
+  category     String
+  amount       Float
+  date         DateTime
+  description  String
+  reminderDate DateTime?
+
+  @@map("expenses")
+}
+model Activity {
+  id         Int      @id @default(autoincrement())
+  action     String
+  created_at DateTime @default(now())
+}
