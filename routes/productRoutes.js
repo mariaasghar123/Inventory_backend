@@ -4,7 +4,8 @@ import {
   createProduct,
   getProductById,
   updateProduct,
-  deleteProduct
+  deleteProduct,
+  getProductByBarcode
 } from '../controllers/productController.js'
 
 const router = express.Router()
@@ -12,6 +13,8 @@ const router = express.Router()
 // All CRUD endpoints
 router.get('/', getProducts)
 router.post('/', createProduct)
+router.get('/barcode/:barcode', getProductByBarcode)
+
 router.get('/:id', getProductById)
 router.put('/:id', updateProduct)
 router.delete('/:id', deleteProduct)

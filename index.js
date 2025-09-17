@@ -2,7 +2,7 @@
 import express from "express";
 import cors from "cors";
 import prisma from "./prisma/client.js";
-// import { PrismaClient } from "@prisma/client";
+
 import productRoutes from './routes/productRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import stockBatchRoutes from './routes/stockBatchRoutes.js';
@@ -17,34 +17,36 @@ import dashboardRoutes from './routes/dashbaord.js';
 import authRoutes from './routes/authRoutes.js';
 
 const app = express();
-//  const prisma = new PrismaClient();
 
-app.use(cors());
+// ✅ CORS config — allow both local & production URLs
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://inventory-system-utb5.vercel.app",
+];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+  origin: allowedOrigins,
+  credentials: true,
 }));
 
 app.use(express.json());
-
 
 // Test route
 app.get("/", (req, res) => {
   res.send("POS Backend Running ✅");
 });
+
 // Routes
 app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/stockbatches', stockBatchRoutes);
 app.use('/api/sales', saleRoutes);
 app.use('/api/saleitems', saleItemRoutes);
-
-// ✅ New routes
 app.use('/api/returns', returnRoutes);
 app.use('/api/purchases', purchaseRoutes);
 app.use('/api/purchaseitems', purchaseItemRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/dashboard', dashboardRoutes);
-
 app.use('/api/auth', authRoutes);
 
 const PORT = process.env.PORT || 5000;

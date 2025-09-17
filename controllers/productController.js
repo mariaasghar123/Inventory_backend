@@ -1,5 +1,6 @@
 import prisma from '../prisma/client.js' // jo bhi aapne banaya hai
-
+import { customAlphabet } from 'nanoid';
+const nanoid = customAlphabet('1234567890', 12); // 12 digit number
 // ✅ Get all products
 export const getProducts = async (req, res) => {
   try {
@@ -18,13 +19,16 @@ export const createProduct = async (req, res) => {
   } = req.body
 
   try {
+    // agar barcode nahi bheja user ne to hum khud generate karen
+    const finalBarcode = barcode && barcode.trim() !== '' ? barcode : nanoid();
+
     const product = await prisma.product.create({
       data: {
         sku,
         name,
         category,
         unit,
-        barcode,
+        barcode: finalBarcode,
         purchase_price: parseFloat(purchase_price),
         sale_price: parseFloat(sale_price),
         reorder_level: parseInt(reorder_level)
@@ -38,9 +42,11 @@ export const createProduct = async (req, res) => {
     });
     res.status(201).json(product)
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Failed to create product' })
   }
 }
+
 
 // ✏️ Get single product
 export const getProductById = async (req, res) => {
@@ -57,6 +63,21 @@ export const getProductById = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch product' })
   }
 }
+// ✅ Get product by barcode
+export const getProductByBarcode = async (req, res) => {
+  const { barcode } = req.params;
+  try {
+    const product = await prisma.product.findFirst({
+      where: { barcode: barcode }
+    });
+    if (!product) return res.status(404).json({ error: 'Product not found' });
+    res.json(product);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch product by barcode' });
+  }
+};
+
 
 // ✏️ Update product
 export const updateProduct = async (req, res) => {
