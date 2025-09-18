@@ -15,6 +15,9 @@ import purchaseRoutes from './routes/purchases.js';
 import purchaseItemRoutes from './routes/purchaseItems.js';
 import dashboardRoutes from './routes/dashbaord.js';
 import authRoutes from './routes/authRoutes.js';
+// import profitlossRoutes from "./routes/profitlossRoutes.js";
+import profitlossRoutes from './routes/profitlossRoutes.js';
+
 
 const app = express();
 
@@ -48,6 +51,7 @@ app.use('/api/purchaseitems', purchaseItemRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/profit-loss', profitlossRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

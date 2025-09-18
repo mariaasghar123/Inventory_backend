@@ -38,6 +38,36 @@ router.post("/signup", async (req, res) => {
 });
 
 // ✅ Login route
+// router.post("/login", async (req, res) => {
+//   try {
+//     const { username, password } = req.body;
+
+//     // Find user
+//     const user = await prisma.user.findUnique({ where: { username } });
+//     if (!user) {
+//       return res.status(400).json({ message: "Invalid username or password" });
+//     }
+
+//     // Compare password
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (!isMatch) {
+//       return res.status(400).json({ message: "Invalid username or password" });
+//     }
+
+//     // Generate JWT
+//     const token = jwt.sign(
+//       { userId: user.id, role: user.role },
+//       process.env.JWT_SECRET || "secretkey", // apna secret env me rakho
+//       { expiresIn: "1d" }
+//     );
+
+//     res.json({ message: "Login successful", token });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Login failed" });
+//   }
+// });
+// ✅ Login route (updated)
 router.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -56,15 +86,27 @@ router.post("/login", async (req, res) => {
 
     // Generate JWT
     const token = jwt.sign(
-      { userId: user.id, role: user.role },
-      process.env.JWT_SECRET || "secretkey", // apna secret env me rakho
+      { userId: user.id, role: user.role }, // ✅ role bhi token me hai
+      process.env.JWT_SECRET || "secretkey",
       { expiresIn: "1d" }
     );
 
-    res.json({ message: "Login successful", token });
+    // ✅ Frontend ko token + user dono bhejo
+    res.json({
+      message: "Login successful",
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        username: user.username,
+        email: user.email,
+        role: user.role, // admin/salesman/user
+      },
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Login failed" });
   }
 });
+
 export default router;
